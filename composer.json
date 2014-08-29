@@ -25,7 +25,9 @@
         "friendsofsymfony/http-cache-bundle": "~1.0",
         "willdurand/hateoas-bundle": "1.0.*@dev",
         "hautelook/templated-uri-bundle": "~2.0",
-        "willdurand/rest-extra-bundle": "~1.0"
+        "willdurand/rest-extra-bundle": "~1.0",
+        "mopa/bootstrap-bundle": "v3.0.0-beta3",
+        "twbs/bootstrap": "v3.0.0"
     },
     "conflict": {
         "symfony/routing": "2.4.1"
