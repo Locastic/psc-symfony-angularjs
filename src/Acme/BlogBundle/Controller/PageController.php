@@ -235,7 +235,7 @@ class PageController extends FOSRestController
                 '_format' => $request->get('_format')
             );
 
-            return $this->routeRedirectView('api_1_get_page', $routeOptions, Codes::HTTP_NO_CONTENT);
+            return $this->routeRedirectView('api_1_get_page', $routeOptions);
 
         } catch (InvalidFormException $exception) {
 

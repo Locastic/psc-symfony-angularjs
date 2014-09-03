@@ -18,7 +18,8 @@ class PageControllerTest extends WebTestCase
 
     public function testJsonPostPageAction()
     {
-        $client = static::createClient();
+        $client   = static::createClient();
+
         $client->request(
             'POST',
             '/api/v1/pages.json',
@@ -27,7 +28,6 @@ class PageControllerTest extends WebTestCase
             array('CONTENT_TYPE' => 'application/json'),
             '{"title":"title1","body":"body1"}'
         );
-
         $this->assertJsonResponse($client->getResponse(), 201, false);
     }
 
@@ -58,53 +58,53 @@ class PageControllerTest extends WebTestCase
             $client->getResponse()->getContent());
     }
 
-//    public function testJsonPutPageActionShouldCreate()
-//    {
-//        $client = static::createClient();
-//
-//        $id = 0;
-//        $client->request('GET', sprintf('/api/v1/pages/%d.json', $id), array('ACCEPT' => 'application/json'));
-//
-//        $this->assertEquals(404, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
-//
-//        $client->request(
-//            'PUT',
-//            sprintf('/api/v1/pages/%d.json', $id),
-//            array(),
-//            array(),
-//            array('CONTENT_TYPE' => 'application/json'),
-//            '{"title":"abc","body":"def"}'
-//        );
-//
-//        $this->assertJsonResponse($client->getResponse(), 201, false);
-//    }
+    public function testJsonPutPageActionShouldCreate()
+    {
+        $client = static::createClient();
+
+        $id = 0;
+        $client->request('GET', sprintf('/api/v1/pages/%d.json', $id), array('ACCEPT' => 'application/json'));
+
+        $this->assertEquals(404, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+
+        $client->request(
+            'PUT',
+            sprintf('/api/v1/pages/%d.json', $id),
+            array(),
+            array(),
+            array('CONTENT_TYPE' => 'application/json'),
+            '{"title":"abc","body":"def"}'
+        );
+
+        $this->assertJsonResponse($client->getResponse(), 201, false);
+    }
 
 
-//    public function testJsonPutPageActionShouldModify()
-//    {
-//        $client = static::createClient();
-//
-//        $client->request('GET', sprintf('/api/v1/pages/%d.json', 1), array('ACCEPT' => 'application/json'));
-//        $this->assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
-//
-//        $client->request(
-//            'PUT',
-//            sprintf('/api/v1/pages/%d.json', 1),
-//            array(),
-//            array(),
-//            array('CONTENT_TYPE' => 'application/json'),
-//            '{"title":"abc","body":"def"}'
-//        );
-//
+    public function testJsonPutPageActionShouldModify()
+    {
+        $client = static::createClient();
+
+        $client->request('GET', sprintf('/api/v1/pages/%d.json', 1), array('ACCEPT' => 'application/json'));
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+
+        $client->request(
+            'PUT',
+            sprintf('/api/v1/pages/%d.json', 1),
+            array(),
+            array(),
+            array('CONTENT_TYPE' => 'application/json'),
+            '{"title":"abc","body":"def"}'
+        );
+
 //        $this->assertJsonResponse($client->getResponse(), 204, false);
-//        $this->assertTrue(
-//            $client->getResponse()->headers->contains(
-//                'Location',
-//                sprintf('http://localhost/api/v1/pages/%d.json', 1)
-//            ),
-//            $client->getResponse()->headers
-//        );
-//    }
+        $this->assertTrue(
+            $client->getResponse()->headers->contains(
+                'Location',
+                sprintf('http://localhost/api/v1/pages/%d.json', 1)
+            ),
+            $client->getResponse()->headers
+        );
+    }
 
 
     public function testJsonPatchPageAction()
@@ -120,7 +120,7 @@ class PageControllerTest extends WebTestCase
             '{"body":"def"}'
         );
 
-        $this->assertJsonResponse($client->getResponse(), 204, false);
+        $this->assertJsonResponse($client->getResponse(), 201, false);
         $this->assertTrue(
             $client->getResponse()->headers->contains(
                 'Location',
@@ -131,7 +131,7 @@ class PageControllerTest extends WebTestCase
     }
 
 
-    
+
     public function testJsonPostPageActionShouldReturn400WithBadParameters()
     {
         $client = static::createClient();
