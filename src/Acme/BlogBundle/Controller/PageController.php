@@ -8,7 +8,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Util\Codes;
 use FOS\RestBundle\Controller\Annotations;
+use FOS\RestBundle\View\View;
+use FOS\RestBundle\Request\ParamFetcherInterface;
 
+use Symfony\Component\Form\FormTypeInterface;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
 use Acme\BlogBundle\Exception\InvalidFormException;
@@ -19,7 +22,38 @@ use Acme\BlogBundle\Model\PageInterface;
 class PageController extends FOSRestController
 {
     /**
-     * Get single Page,
+     * List all pages.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   statusCodes = {
+     *     200 = "Returned when successful"
+     *   }
+     * )
+     *
+     * @Annotations\QueryParam(name="offset", requirements="\d+", nullable=true, description="Offset from which to start listing pages.")
+     * @Annotations\QueryParam(name="limit", requirements="\d+", default="5", description="How many pages to return.")
+     *
+     * @Annotations\View(
+     *  templateVar="pages"
+     * )
+     *
+     * @param Request               $request      the request object
+     * @param ParamFetcherInterface $paramFetcher param fetcher service
+     *
+     * @return array
+     */
+    public function getPagesAction(Request $request, ParamFetcherInterface $paramFetcher)
+    {
+        $offset = $paramFetcher->get('offset');
+        $offset = null == $offset ? 0 : $offset;
+        $limit = $paramFetcher->get('limit');
+
+        return $this->container->get('acme_blog.page.handler')->all($limit, $offset);
+    }
+
+    /**
+     * Get single Page.
      *
      * @ApiDoc(
      *   resource = true,
@@ -56,7 +90,9 @@ class PageController extends FOSRestController
      *   }
      * )
      *
-     * @Annotations\View()
+     * @Annotations\View(
+     *  templateVar = "form"
+     * )
      *
      * @return FormTypeInterface
      */
@@ -64,7 +100,6 @@ class PageController extends FOSRestController
     {
         return $this->createForm(new PageType());
     }
-
 
     /**
      * Create a Page from the submitted data.
@@ -81,28 +116,130 @@ class PageController extends FOSRestController
      *
      * @Annotations\View(
      *  template = "AcmeBlogBundle:Page:newPage.html.twig",
-     *  statusCode = Codes::HTTP_BAD_REQUEST
+     *  statusCode = Codes::HTTP_BAD_REQUEST,
+     *  templateVar = "form"
      * )
      *
-     * @return FormTypeInterface|RouteRedirectView
+     * @param Request $request the request object
+     *
+     * @return FormTypeInterface|View
      */
-    public function postPageAction()
+    public function postPageAction(Request $request)
     {
         try {
             $newPage = $this->container->get('acme_blog.page.handler')->post(
-                    $this->container->get('request')->request->all()
+                $request->request->all()
             );
 
             $routeOptions = array(
                 'id' => $newPage->getId(),
-                '_format' => $this->container->get('request')->get('_format')
+                '_format' => $request->get('_format')
             );
 
             return $this->routeRedirectView('api_1_get_page', $routeOptions, Codes::HTTP_CREATED);
 
         } catch (InvalidFormException $exception) {
 
-            return array('form' => $exception->getForm());
+            return $exception->getForm();
+        }
+    }
+
+    /**
+     * Update existing page from the submitted data or create a new page at a specific location.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   input = "Acme\DemoBundle\Form\PageType",
+     *   statusCodes = {
+     *     201 = "Returned when the Page is created",
+     *     204 = "Returned when successful",
+     *     400 = "Returned when the form has errors"
+     *   }
+     * )
+     *
+     * @Annotations\View(
+     *  template = "AcmeBlogBundle:Page:editPage.html.twig",
+     *  templateVar = "form"
+     * )
+     *
+     * @param Request $request the request object
+     * @param int     $id      the page id
+     *
+     * @return FormTypeInterface|View
+     *
+     * @throws NotFoundHttpException when page not exist
+     */
+    public function putPageAction(Request $request, $id)
+    {
+        try {
+            if (!($page = $this->container->get('acme_blog.page.handler')->get($id))) {
+                $statusCode = Codes::HTTP_CREATED;
+                $page = $this->container->get('acme_blog.page.handler')->post(
+                    $request->request->all()
+                );
+            } else {
+                $statusCode = Codes::HTTP_NO_CONTENT;
+                $page = $this->container->get('acme_blog.page.handler')->put(
+                    $page,
+                    $request->request->all()
+                );
+            }
+
+            $routeOptions = array(
+                'id' => $page->getId(),
+                '_format' => $request->get('_format')
+            );
+
+            return $this->routeRedirectView('api_1_get_page', $routeOptions, $statusCode);
+
+        } catch (InvalidFormException $exception) {
+
+            return $exception->getForm();
+        }
+    }
+
+    /**
+     * Update existing page from the submitted data or create a new page at a specific location.
+     *
+     * @ApiDoc(
+     *   resource = true,
+     *   input = "Acme\DemoBundle\Form\PageType",
+     *   statusCodes = {
+     *     204 = "Returned when successful",
+     *     400 = "Returned when the form has errors"
+     *   }
+     * )
+     *
+     * @Annotations\View(
+     *  template = "AcmeBlogBundle:Page:editPage.html.twig",
+     *  templateVar = "form"
+     * )
+     *
+     * @param Request $request the request object
+     * @param int     $id      the page id
+     *
+     * @return FormTypeInterface|View
+     *
+     * @throws NotFoundHttpException when page not exist
+     */
+    public function patchPageAction(Request $request, $id)
+    {
+        try {
+            $page = $this->container->get('acme_blog.page.handler')->patch(
+                $this->getOr404($id),
+                $request->request->all()
+            );
+
+            $routeOptions = array(
+                'id' => $page->getId(),
+                '_format' => $request->get('_format')
+            );
+
+            return $this->routeRedirectView('api_1_get_page', $routeOptions, Codes::HTTP_NO_CONTENT);
+
+        } catch (InvalidFormException $exception) {
+
+            return $exception->getForm();
         }
     }
 

@@ -4,23 +4,26 @@ security:
 
     role_hierarchy:
         ROLE_ADMIN:       ROLE_USER
-        ROLE_API:         ROLE_USER
         ROLE_SUPER_ADMIN: [ROLE_USER, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
 
     providers:
         in_memory:
             memory:
                 users:
-                    restapi:  { password: secretpw, roles: [ 'ROLE_API' ] }
+                    user:  { password: userpass, roles: [ 'ROLE_USER', 'ROLE_API' ] }
+                    admin: { password: adminpass, roles: [ 'ROLE_ADMIN', 'ROLE_API' ] }
 
     firewalls:
         dev:
             pattern:  ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        main:
-            pattern: ^/
+        login:
+            pattern:  ^/demo/secured/login$
+            security: false
+
+        secured_area:
+            pattern:    ^/api
             anonymous: ~
-            stateless:  true
             http_basic:
-                realm: "Demo REST API (username: restapi, password: secretpw)"
+                realm: "You should have a user name and password"
