@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 psc-symfony-angularjs
 =====================
 
@@ -209,4 +208,3 @@ Enjoy!
 [19]: https://github.com/hautelook/TemplatedUriBundle
 [20]: https://github.com/willdurand/BazingaRestExtraBundle
 [21]: https://github.com/FriendsOfSymfony/FOSHttpCacheBundle/
->>>>>>> beba52d77f30525659a75ae0e03d55111140320e
